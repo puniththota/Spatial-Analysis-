@@ -1,0 +1,45 @@
+select * from mexstates limit 100;
+
+ALTER TABLE mexstates DROP COLUMN IF EXISTS numschools;
+ALTER TABLE mexstates ADD COLUMN numschools INTEGER DEFAULT 0;
+
+With PolygonQuery as (
+    SELECT st.id,count(*) as num
+    FROM mexstates as st, mexicoschools as sc
+    where ST_CONTAINS(st.geom,sc.geom)
+    GROUP BY st.id
+)
+UPDATE mexstates
+SET numschools = (PolygonQuery.num)
+FROM PolygonQuery 
+WHERE mexstates.id = PolygonQuery.id;
+
+ALTER TABLE mexstates DROP COLUMN IF EXISTS numhospitals;
+ALTER TABLE mexstates ADD COLUMN numhospitals INTEGER DEFAULT 0;
+
+With PolygonQuery as (
+    SELECT st.id,count(*) as num
+    FROM mexstates as st, mexicohospitals as sh
+    where ST_CONTAINS(st.geom,sh.geom)
+    GROUP BY st.id
+)
+UPDATE mexstates
+SET numhospitals= (PolygonQuery.num)
+FROM PolygonQuery 
+WHERE mexstates.id = PolygonQuery.id;
+
+
+select * from mexicohospitals 
+where timestamp like '2004%';
+
+select * from mexicohospitals 
+where timestamp like '20%';
+
+select * from mexicoschools
+where timestamp ~*'^201.*$';
+
+
+
+
+
+
